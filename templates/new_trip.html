@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Create New Trip - The Voyager{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <h2>Plan Your Next Adventure</h2>
+        <p class="form-subtitle">Tell us about your trip and we'll create a personalized itinerary using AI</p>
+        
+        <form method="POST" action="{{ url_for('new_trip') }}">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                {{ form.title.label }}
+                {{ form.title(class="form-control", placeholder="e.g. Paris, Tokyo, Bali") }}
+                {% if form.title.errors %}
+                    <div class="form-errors">
+                        {% for error in form.title.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <small class="form-help">Enter the city, country, or region you want to visit</small>
+            </div>
+            
+            <div class="form-group">
+                {{ form.num_days.label }}
+                {{ form.num_days(class="form-control", placeholder="e.g. 7", min="1", max="30") }}
+                {% if form.num_days.errors %}
+                    <div class="form-errors">
+                        {% for error in form.num_days.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <small class="form-help">How many days will your trip last? (1-30 days)</small>
+            </div>
+            
+            <div class="form-group">
+                {{ form.preferences.label }}
+                {{ form.preferences(class="form-control", rows="4", placeholder="e.g. I love museums and local cuisine. Budget-conscious traveler. Prefer walking tours over bus tours.") }}
+                {% if form.preferences.errors %}
+                    <div class="form-errors">
+                        {% for error in form.preferences.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <small class="form-help">Optional: Share your interests, dietary restrictions, budget, travel style, or any special requirements</small>
+            </div>
+            
+            <div class="form-group form-actions">
+                {{ form.submit(class="btn btn-primary btn-large") }}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+        
+        <div class="form-info">
+            <h4>💡 Tips for better itineraries:</h4>
+            <ul>
+                <li>Be specific about your interests (culture, food, nature, adventure, etc.)</li>
+                <li>Mention any accessibility needs or dietary restrictions</li>
+                <li>Indicate your budget level (budget, moderate, luxury)</li>
+                <li>Note your preferred pace (relaxed, moderate, packed schedule)</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

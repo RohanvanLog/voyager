@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}{{ trip.title }} - The Voyager{% endblock %}
+
+{% block content %}
+<div class="itinerary-container">
+    <!-- Trip Header -->
+    <div class="trip-header">
+        <div class="trip-header-main">
+            <h2>{{ trip.title }}</h2>
+            <p class="trip-meta">
+                <span class="trip-duration">{{ trip.num_days }} day{{ 's' if trip.num_days != 1 else '' }}</span>
+            </p>
+        </div>
+        <div class="trip-header-actions">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    {% if trip.preferences %}
+    <div class="trip-preferences">
+        <h4>Trip Preferences</h4>
+        <p>{{ trip.preferences }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Itinerary Days Section -->
+    <div id="itinerary" data-tripid="{{ trip.id }}">
+        <div class="itinerary-header">
+            <h3>Your Itinerary</h3>
+            <p class="itinerary-note">💡 Click "Regenerate" on any day to get a fresh AI-generated plan for that day</p>
+        </div>
+
+        {% if days %}
+            <div class="days-list">
+                {% for day in days %}
+                <div class="day-block" id="day-{{ day.day_number }}">
+                    <div class="day-header">
+                        <h4 class="day-title">Day {{ day.day_number }}</h4>
+                        <button type="button" class="regen-btn" data-day="{{ day.day_number }}">
+                            <span class="regen-icon">🔄</span> Regenerate
+                        </button>
+                    </div>
+                    <div class="day-body">
+                        <p class="day-content">{{ day.content }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>No itinerary days found for this trip.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
