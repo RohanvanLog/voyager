@@ -1,54 +1,45 @@
-login.html – Login Page Template
+{% extends "base.html" %}
 
-Prompt:
+{% block title %}Login - The Voyager{% endblock %}
 
-Create the login.html template for user login, which extends base.html. This page should present a login form for the user to enter their username and password. Requirements:
+{% block content %}
+<div class="auth-container">
+    <h2>Login</h2>
 
-Extends Base: Begin with {% extends "base.html" %} and have a {% block content %} section for the login form content.
+    <form method="post" action="{{ url_for('login') }}">
+        {{ form.hidden_tag() }}
 
-Heading: Perhaps include a heading like <h2>Login</h2> to label the form.
+        <div class="form-group">
+            {{ form.username.label }}
+            {{ form.username(class="form-control", size=32) }}
+            {% if form.username.errors %}
+                <div class="form-errors">
+                    {% for error in form.username.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
 
-Form Structure: Use the Flask-WTF LoginForm passed from the route. In the view function, we are rendering this template with a form (e.g., render_template("login.html", form=form)). The template should use that form object:
+        <div class="form-group">
+            {{ form.password.label }}
+            {{ form.password(class="form-control", size=32) }}
+            {% if form.password.errors %}
+                <div class="form-errors">
+                    {% for error in form.password.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
 
-Start a <form method="post" action="{{ url_for('login') }}"> (the form posts to the same login route).
+        <div class="form-group">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
 
-Include the CSRF token hidden field. The easiest way is to include {{ form.hidden_tag() }} at the top of the form, which will render any hidden fields including CSRF.
-
-Then create form fields:
-
-Username: you can do {{ form.username.label }} and {{ form.username(size=32) }} (for example) to render the input. Or manually create input fields and use form.username.data on submission, but using the form fields is simpler.
-
-Password: {{ form.password.label }} and {{ form.password(size=32) }} to render the password input.
-
-A submit button: you can use {{ form.submit() }} if you defined a SubmitField in the form, or just a regular <button type="submit">Login</button>.
-
-Optionally, display validation errors for each field: for example, {{ form.username.errors }} will list errors (like "This field is required").
-
-If a flash message like "Invalid credentials" is set by the view on failed login, the base template is already showing the first flashed message at the top (in the alert div). Ensure that base.html includes that so the user sees why login failed.
-
-Keep the form simple and user-friendly. For example:
-
-<form method="post">
-  {{ form.hidden_tag() }}
-  <p>
-    {{ form.username.label }}<br>
-    {{ form.username(class="form-control") }}
-  </p>
-  <p>
-    {{ form.password.label }}<br>
-    {{ form.password(class="form-control") }}
-  </p>
-  <p>{{ form.submit(class="btn btn-primary", value="Login") }}</p>
-</form>
-
-
-(Here we use some classes like "form-control" or "btn" assuming we might style them in CSS or if using Bootstrap, but even without Bootstrap, we can style in our CSS. If not using any CSS framework, just basic HTML inputs are fine.)
-
-Provide a link to the registration page if the user doesn't have an account. For example, below the form:
-
-<p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a>.</p>
-
-
-Make sure to close the {% block content %} at the end.
-
-The output should be a valid HTML template string that extends base.html and contains the described form.
+    <p class="auth-link">
+        Don't have an account? <a href="{{ url_for('register') }}">Register here</a>.
+    </p>
+</div>
+{% endblock %}

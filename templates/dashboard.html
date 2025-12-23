@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - The Voyager{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div>
+            <h2>Welcome, {{ session.get('username') }}!</h2>
+            <p class="dashboard-subtitle">Your travel itineraries</p>
+        </div>
+        <div>
+            <a href="{{ url_for('new_trip') }}" class="btn btn-primary">+ Create New Trip</a>
+        </div>
+    </div>
+
+    {% if trips %}
+        <div class="trips-grid">
+            {% for trip in trips %}
+                <div class="trip-card">
+                    <div class="trip-card-header">
+                        <h3>
+                            <a href="{{ url_for('trip_view', trip_id=trip.id) }}">
+                                {{ trip.title }}
+                            </a>
+                        </h3>
+                        <span class="trip-duration">{{ trip.num_days }} day{{ 's' if trip.num_days != 1 else '' }}</span>
+                    </div>
+
+                    {% if trip.preferences %}
+                        <div class="trip-card-body">
+                            <p class="trip-preferences">{{ trip.preferences[:100] }}{{ '...' if trip.preferences|length > 100 else '' }}</p>
+                        </div>
+                    {% endif %}
+
+                    <div class="trip-card-footer">
+                        <a href="{{ url_for('trip_view', trip_id=trip.id) }}" class="btn btn-secondary">View Itinerary</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-content">
+                <h3>No trips yet</h3>
+                <p>Start planning your next adventure by creating your first trip!</p>
+                <a href="{{ url_for('new_trip') }}" class="btn btn-primary">Create Your First Trip</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

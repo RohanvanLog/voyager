@@ -1,11 +1,11 @@
 # openai_service.py
 """
 OpenAI API integration for The Voyager application.
-Handles AI-powered itinerary generation using GPT-5-nano model.
+Handles AI-powered itinerary generation using GPT models.
 """
 
 import json
-import openai
+from openai import OpenAI
 from config import Config
 
 
@@ -13,12 +13,12 @@ from config import Config
 # CONFIGURATION
 # ============================================================================
 
-# Set the OpenAI API key from environment configuration
-openai.api_key = Config.OPENAI_API_KEY
+# Initialize OpenAI client with API key from environment configuration
+client = OpenAI(api_key=Config.OPENAI_API_KEY)
 
 # Model configuration
-MODEL_NAME = "gpt-5-nano"
-TEMPERATURE = 0  # Deterministic output for consistent JSON structure
+MODEL_NAME = "gpt-5-nano"  # Using GPT-5-nano for cost-effective quality results
+TEMPERATURE = 0.7  # Balanced between creativity and consistency
 
 
 # ============================================================================
@@ -48,47 +48,43 @@ Do not include any text before or after the JSON object."""
 
 def generate_itinerary(destination, days, prefs):
     """
-    Generate a complete multi-day travel itinerary using OpenAI GPT-5.
-    
+    Generate a complete multi-day travel itinerary using OpenAI.
+
     Args:
         destination: The travel destination (city, country, or region)
         days: Number of days for the trip
         prefs: User preferences (dietary restrictions, interests, budget, etc.)
-    
+
     Returns:
         dict: Parsed JSON with structure {"days": [{"day": 1, "summary": "..."}, ...]}
         None: If generation fails or response is invalid
-    
+
     Raises:
         Exception: If API call fails or JSON parsing fails
     """
     # Build the user prompt
     if prefs and prefs.strip():
         user_message = (
+            f"{ITINERARY_SYSTEM_PROMPT}\n\n"
             f"Plan a {days}-day trip to {destination}. "
-            f"User preferences: {prefs}. "
-            f"Provide the itinerary in the specified JSON format."
+            f"User preferences: {prefs}."
         )
     else:
         user_message = (
-            f"Plan a {days}-day trip to {destination}. "
-            f"Provide the itinerary in the specified JSON format."
+            f"{ITINERARY_SYSTEM_PROMPT}\n\n"
+            f"Plan a {days}-day trip to {destination}."
         )
-    
+
     try:
-        # Call OpenAI ChatCompletion API
-        response = openai.ChatCompletion.create(
+        # Call OpenAI Responses API
+        response = client.responses.create(
             model=MODEL_NAME,
-            messages=[
-                {"role": "system", "content": ITINERARY_SYSTEM_PROMPT},
-                {"role": "user", "content": user_message}
-            ],
-            temperature=TEMPERATURE,
-            max_tokens=1500  # Sufficient for ~20-30 days with detailed summaries
+            input=user_message,
+            store=True
         )
-        
+
         # Extract the response content
-        response_content = response.choices[0].message.content.strip()
+        response_content = response.output_text.strip()
         
         # Parse JSON response
         itinerary_data = json.loads(response_content)
@@ -126,23 +122,20 @@ def generate_itinerary(destination, days, prefs):
         # Attempt to retry once with stricter prompt
         try:
             retry_message = (
+                f"{ITINERARY_SYSTEM_PROMPT}\n\n"
                 f"Plan a {days}-day trip to {destination}. "
                 f"CRITICAL: Respond with ONLY valid JSON, no markdown, no code blocks. "
                 f"Format: {{\"days\": [{{\"day\": 1, \"summary\": \"...\"}}, ...]}}. "
                 f"Preferences: {prefs if prefs else 'none'}."
             )
-            
-            response = openai.ChatCompletion.create(
+
+            response = client.responses.create(
                 model=MODEL_NAME,
-                messages=[
-                    {"role": "system", "content": ITINERARY_SYSTEM_PROMPT},
-                    {"role": "user", "content": retry_message}
-                ],
-                temperature=TEMPERATURE,
-                max_tokens=1500
+                input=retry_message,
+                store=True
             )
-            
-            response_content = response.choices[0].message.content.strip()
+
+            response_content = response.output_text.strip()
             itinerary_data = json.loads(response_content)
             
             # Quick validation
@@ -155,12 +148,10 @@ def generate_itinerary(destination, days, prefs):
             print(f"Retry also failed: {retry_error}")
             return None
     
-    except openai.error.OpenAIError as e:
-        print(f"OpenAI API error: {e}")
-        return None
-    
     except Exception as e:
-        print(f"Unexpected error in generate_itinerary: {e}")
+        print(f"Error in generate_itinerary: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 
@@ -171,47 +162,43 @@ def generate_itinerary(destination, days, prefs):
 def regenerate_day(destination, day_num, total_days, prefs):
     """
     Regenerate the itinerary for a single day of a trip.
-    
+
     Args:
         destination: The travel destination
         day_num: The specific day number to regenerate (1-indexed)
         total_days: Total number of days in the trip (for context)
         prefs: User preferences for the trip
-    
+
     Returns:
         dict: Parsed JSON with structure {"day": <num>, "summary": "..."}
         None: If generation fails or response is invalid
-    
+
     Raises:
         Exception: If API call fails or JSON parsing fails
     """
     # Build the user prompt with context
     if prefs and prefs.strip():
         user_message = (
+            f"{REGENERATE_DAY_SYSTEM_PROMPT}\n\n"
             f"Regenerate the itinerary for Day {day_num} of a {total_days}-day trip to {destination}. "
-            f"User preferences: {prefs}. "
-            f"Provide a fresh, alternative plan for this day in the specified JSON format."
+            f"User preferences: {prefs}."
         )
     else:
         user_message = (
-            f"Regenerate the itinerary for Day {day_num} of a {total_days}-day trip to {destination}. "
-            f"Provide a fresh, alternative plan for this day in the specified JSON format."
+            f"{REGENERATE_DAY_SYSTEM_PROMPT}\n\n"
+            f"Regenerate the itinerary for Day {day_num} of a {total_days}-day trip to {destination}."
         )
-    
+
     try:
-        # Call OpenAI ChatCompletion API
-        response = openai.ChatCompletion.create(
+        # Call OpenAI Responses API
+        response = client.responses.create(
             model=MODEL_NAME,
-            messages=[
-                {"role": "system", "content": REGENERATE_DAY_SYSTEM_PROMPT},
-                {"role": "user", "content": user_message}
-            ],
-            temperature=TEMPERATURE,
-            max_tokens=300  # Single day needs less tokens
+            input=user_message,
+            store=True
         )
-        
+
         # Extract the response content
-        response_content = response.choices[0].message.content.strip()
+        response_content = response.output_text.strip()
         
         # Parse JSON response
         day_data = json.loads(response_content)
@@ -237,11 +224,9 @@ def regenerate_day(destination, day_num, total_days, prefs):
         print(f"JSON parsing error: {e}")
         print(f"Response content: {response_content}")
         return None
-    
-    except openai.error.OpenAIError as e:
-        print(f"OpenAI API error: {e}")
-        return None
-    
+
     except Exception as e:
-        print(f"Unexpected error in regenerate_day: {e}")
+        print(f"Error in regenerate_day: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
         return None

@@ -9,7 +9,8 @@ import os
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+# override=True ensures .env values take precedence over system environment variables
+load_dotenv(override=True)
 
 
 class Config:
@@ -26,7 +27,7 @@ class Config:
         raise ValueError("SECRET_KEY environment variable must be set")
     
     # OpenAI API Configuration
-    # API key for GPT-5-nano model access
+    # API key for gpt-5-nano model access
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
     if not OPENAI_API_KEY:
         raise ValueError("OPENAI_API_KEY environment variable must be set")

@@ -243,6 +243,8 @@ def new_trip():
         except Exception as e:
             flash('An error occurred while generating the itinerary. Please try again.', 'error')
             print(f"Trip creation error: {e}")
+            import traceback
+            traceback.print_exc()
             return render_template('new_trip.html', form=form)
     
     return render_template('new_trip.html', form=form)
