@@ -1,4 +1,6 @@
 # The Voyager
+#### Video Demo:  <URL HERE>
+#### Description:
 
 An AI-powered travel itinerary generator that creates personalized multi-day trip plans using OpenAI's GPT-5-nano model.
 
@@ -172,4 +174,5 @@ This project is licensed under the MIT License.
 
 - OpenAI for the GPT-5-nano API
 - Flask framework
-- Bootstrap for UI components
+- Bootstrap for UI components 
+- Claude AI for coding assistance

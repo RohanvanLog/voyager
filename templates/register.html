@@ -3,11 +3,12 @@
 {% block title %}Register - The Voyager{% endblock %}
 
 {% block content %}
+<h1 class="page-title">Create Account</h1>
+
 <div class="auth-container">
     <div class="auth-card">
-        <h2>Create Account</h2>
         <p class="auth-subtitle">Join The Voyager to start planning your next adventure</p>
-        
+
         <form method="POST" action="{{ url_for('register') }}">
             {{ form.hidden_tag() }}
             
